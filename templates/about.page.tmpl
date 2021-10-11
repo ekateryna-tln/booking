@@ -1,0 +1,21 @@
+{{template "base" .}}
+
+{{define "content"}}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1>This is the about page</h1>
+            <p>Lorem ipsum dolor sit amet.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+            <p>From the template: {{index .StringMap "test"}}</p>
+            <p>
+                {{if ne (index .StringMap "remote_ip") ""}}
+                    IP is: {{index .StringMap "remote_ip"}}
+                {{else}}
+                    no ip <a href="/">Home page</a>
+                {{end}}
+            </p>
+        </div>
+    </div>
+</div>
+{{end}}
