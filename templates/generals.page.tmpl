@@ -1,0 +1,59 @@
+{{template "base" .}}
+
+{{define "content"}}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <img src="/static/images/generals-quarters.png" class="img-fluid img-thumbnail mx-auto d-block room-image"
+                 alt="General's Quarters">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <h1 class="text-center mt-4">General's Quarters</h1>
+            <p>Your are away from home, set on the majestic waters of the Atlantic Ocean, this will be a vacation to
+                remember. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid delectus distinctio dolore
+                ea error esse eum itaque labore laboriosam minima nihil odit quas quia sint, unde voluptas voluptatibus!
+                Aliquid atque autem debitis enim error excepturi exercitationem explicabo illo ipsam magnam
+                necessitatibus nihil, nisi odit provident, quae quas qui quia quibusdam rem rerum sed, tempore
+                veritatis! Architecto dignissimos ducimus excepturi ipsam labore neque numquam perspiciatis quia
+                quisquam quod, repellat rerum vel? Aperiam eaque et fugit inventore neque nostrum nulla officiis quos
+                recusandae veritatis. Aspernatur assumenda, culpa deleniti dolor dolorem eveniet natus non optio
+                perferendis porro quaerat reiciendis repellendus ut velit voluptate!</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <a id="check-availability-button" href="#!" class="btn btn-success">Check Availability</a>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "js"}}
+<script>
+    document.getElementById('check-availability-button').addEventListener('click', function () {
+        let html = `
+        <form id="check-availability-form" action="" method="" novalidate class="needs-validation ps-3 pe-3">
+            <div class="row" id="reservation-date-modal">
+                <div class="col">
+                    <div class="mb-3">
+                        <label for="start" class="form-label">Starting date</label>
+                        <input type="text" class="form-control" id="start" name="start"
+                               aria-describedby="startDateHelp" required disabled>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="mb-3">
+                        <label for="end" class="form-label">Ending date</label>
+                        <input type="text" class="form-control" id="end" name="end"
+                               aria-describedby="endDateHelp" required disabled>
+                    </div>
+                </div>
+            </div>
+        </form>
+        `
+        attention.custom({html: html, title: 'Choose your dates'})
+    })
+</script>
+{{end}}
