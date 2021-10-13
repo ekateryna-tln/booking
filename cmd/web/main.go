@@ -2,15 +2,16 @@ package main
 
 import (
 	"github.com/alexedwards/scs/v2"
-	"github.com/ekateryna-tln/booking/pkg/config"
-	"github.com/ekateryna-tln/booking/pkg/hendlers"
-	"github.com/ekateryna-tln/booking/pkg/render"
+	"github.com/ekateryna-tln/booking/internal/config"
+	"github.com/ekateryna-tln/booking/internal/hendlers"
+	"github.com/ekateryna-tln/booking/internal/render"
 	"log"
 	"net/http"
 	"time"
 )
 
 const portNumber = ":8080"
+
 var appConfig config.AppConfig
 var session *scs.SessionManager
 
@@ -36,7 +37,7 @@ func main() {
 	hendlers.SetHandlersRepo(hendlers.NewRepo(&appConfig))
 
 	srv := &http.Server{
-		Addr: portNumber,
+		Addr:    portNumber,
 		Handler: routes(&appConfig),
 	}
 

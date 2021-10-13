@@ -1,8 +1,9 @@
 package render
 
 import (
-	"github.com/ekateryna-tln/booking/pkg/config"
-	"github.com/ekateryna-tln/booking/pkg/models"
+	"github.com/ekateryna-tln/booking/internal/config"
+	"github.com/ekateryna-tln/booking/internal/models"
+	"github.com/justinas/nosurf"
 	"html/template"
 	"log"
 	"net/http"
@@ -18,12 +19,13 @@ func SetRenderAppConfig(a *config.AppConfig) {
 	appConfig = a
 }
 
-func AddDefaultData(tmplData *models.TemplateData) *models.TemplateData {
+func AddDefaultData(tmplData *models.TemplateData, r *http.Request) *models.TemplateData {
+	tmplData.CSRFToken = nosurf.Token(r)
 	return tmplData
 }
 
 // RenderTemplate
-func RenderTemplate(w http.ResponseWriter, tmpl string, tmplData *models.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *models.TemplateData) {
 	var templateList map[string]*template.Template
 	if appConfig.UseCache {
 		templateList = appConfig.TemplateCache
@@ -36,7 +38,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, tmplData *models.Templat
 		log.Fatal("could not get template from template cache")
 	}
 
-	tmplData = AddDefaultData(tmplData)
+	tmplData = AddDefaultData(tmplData, r)
 	err := template.Execute(w, tmplData)
 	if err != nil {
 		log.Fatal("writing template error:", err)
