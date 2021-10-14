@@ -4,7 +4,7 @@ import (
 	"encoding/gob"
 	"github.com/alexedwards/scs/v2"
 	"github.com/ekateryna-tln/booking/internal/config"
-	"github.com/ekateryna-tln/booking/internal/hendlers"
+	"github.com/ekateryna-tln/booking/internal/handlers"
 	"github.com/ekateryna-tln/booking/internal/models"
 	"github.com/ekateryna-tln/booking/internal/render"
 	"log"
@@ -20,6 +20,24 @@ var session *scs.SessionManager
 // main is the main application function
 func main() {
 
+	err := run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	srv := &http.Server{
+		Addr:    portNumber,
+		Handler: routes(&app),
+	}
+
+	err = srv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
+
 	gob.Register(models.Reservation{})
 
 	app.UseCache = false
@@ -32,21 +50,16 @@ func main() {
 	session.Cookie.Secure = app.CookieSecure
 	app.Session = session
 
-	if app.UseCache {
-		templateCache := render.GetTemplateCache()
-		app.TemplateCache = templateCache
+	tc, err := render.CreateTemplateCache()
+	if err != nil {
+		log.Fatal("create template cache error:", err)
+		return err
 	}
+	app.TemplateCache = tc
+	app.UseCache = false
 
 	render.SetRenderApp(&app)
-	hendlers.SetHandlersRepo(hendlers.NewRepo(&app))
+	handlers.SetHandlersRepo(handlers.NewRepo(&app))
 
-	srv := &http.Server{
-		Addr:    portNumber,
-		Handler: routes(&app),
-	}
-
-	err := srv.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
-	}
+	return nil
 }

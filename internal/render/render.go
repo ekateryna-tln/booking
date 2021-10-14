@@ -1,6 +1,7 @@
 package render
 
 import (
+	"fmt"
 	"github.com/ekateryna-tln/booking/internal/config"
 	"github.com/ekateryna-tln/booking/internal/models"
 	"github.com/justinas/nosurf"
@@ -13,6 +14,7 @@ import (
 var functions = make(template.FuncMap)
 
 var app *config.App
+var pathToTemplates = "./templates"
 
 // SetRenderApp sets the config for the render template package
 func SetRenderApp(a *config.App) {
@@ -33,7 +35,11 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplDat
 	if app.UseCache {
 		templateList = app.TemplateCache
 	} else {
-		templateList = GetTemplateCache()
+		var err error
+		templateList, err = CreateTemplateCache()
+		if err != nil {
+			log.Fatal("create template cache error:", err)
+		}
 	}
 
 	template, exist := templateList[tmpl]
@@ -48,24 +54,16 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplDat
 	}
 }
 
-func GetTemplateCache() map[string]*template.Template {
-	templateCache, err := CreateTemplateCache()
-	if err != nil {
-		log.Fatal("create template cache error:", err)
-	}
-	return templateCache
-}
-
 // CreateTemplateCache create a template cache as a map
 func CreateTemplateCache() (map[string]*template.Template, error) {
 	templateCache := make(map[string]*template.Template)
 
-	pages, err := filepath.Glob("./templates/*.page.tmpl")
+	pages, err := filepath.Glob(fmt.Sprintf("%s/*.page.tmpl", pathToTemplates))
 	if err != nil {
 		return templateCache, err
 	}
 
-	layouts, err := filepath.Glob("./templates/*.layout.tmpl")
+	layouts, err := filepath.Glob(fmt.Sprintf("%s/*.layout.tmpl", pathToTemplates))
 	if err != nil {
 		return templateCache, err
 	}
@@ -78,7 +76,7 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 		}
 
 		if len(layouts) > 0 {
-			template, err = template.ParseGlob("./templates/*.layout.tmpl")
+			template, err = template.ParseGlob(fmt.Sprintf("%s/*.layout.tmpl", pathToTemplates))
 			if err != nil {
 				return templateCache, err
 			}

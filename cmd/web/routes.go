@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/ekateryna-tln/booking/internal/config"
-	"github.com/ekateryna-tln/booking/internal/hendlers"
+	"github.com/ekateryna-tln/booking/internal/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
@@ -15,19 +15,19 @@ func routes(app *config.App) http.Handler {
 	mux.Use(NoSurf)
 	mux.Use(LoadSession)
 
-	mux.Get("/", hendlers.Repo.Home)
-	mux.Get("/about", hendlers.Repo.About)
-	mux.Get("/contacts", hendlers.Repo.Contacts)
-	mux.Get("/generals-quarters", hendlers.Repo.Generals)
-	mux.Get("/majors-suites", hendlers.Repo.Majors)
+	mux.Get("/", handlers.Repo.Home)
+	mux.Get("/about", handlers.Repo.About)
+	mux.Get("/contacts", handlers.Repo.Contacts)
+	mux.Get("/generals-quarters", handlers.Repo.Generals)
+	mux.Get("/majors-suites", handlers.Repo.Majors)
 
-	mux.Get("/search-availability", hendlers.Repo.Availability)
-	mux.Post("/search-availability", hendlers.Repo.PostAvailability)
-	mux.Post("/search-availability-json", hendlers.Repo.AvailabilityJSON)
+	mux.Get("/search-availability", handlers.Repo.Availability)
+	mux.Post("/search-availability", handlers.Repo.PostAvailability)
+	mux.Post("/search-availability-json", handlers.Repo.AvailabilityJSON)
 
-	mux.Get("/make-reservation", hendlers.Repo.Reservation)
-	mux.Post("/make-reservation", hendlers.Repo.PostReservation)
-	mux.Get("/reservation-summary", hendlers.Repo.ReservationSummary)
+	mux.Get("/make-reservation", handlers.Repo.Reservation)
+	mux.Post("/make-reservation", handlers.Repo.PostReservation)
+	mux.Get("/reservation-summary", handlers.Repo.ReservationSummary)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
