@@ -12,14 +12,17 @@ import (
 
 var functions = make(template.FuncMap)
 
-var appConfig *config.AppConfig
+var app *config.App
 
-// SetRenderAppConfig sets the config for the render template package
-func SetRenderAppConfig(a *config.AppConfig) {
-	appConfig = a
+// SetRenderApp sets the config for the render template package
+func SetRenderApp(a *config.App) {
+	app = a
 }
 
 func AddDefaultData(tmplData *models.TemplateData, r *http.Request) *models.TemplateData {
+	tmplData.Flash = app.Session.PopString(r.Context(), "flash")
+	tmplData.Error = app.Session.PopString(r.Context(), "error")
+	tmplData.Warning = app.Session.PopString(r.Context(), "warning")
 	tmplData.CSRFToken = nosurf.Token(r)
 	return tmplData
 }
@@ -27,8 +30,8 @@ func AddDefaultData(tmplData *models.TemplateData, r *http.Request) *models.Temp
 // RenderTemplate
 func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *models.TemplateData) {
 	var templateList map[string]*template.Template
-	if appConfig.UseCache {
-		templateList = appConfig.TemplateCache
+	if app.UseCache {
+		templateList = app.TemplateCache
 	} else {
 		templateList = GetTemplateCache()
 	}

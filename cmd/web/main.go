@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/gob"
 	"github.com/alexedwards/scs/v2"
 	"github.com/ekateryna-tln/booking/internal/config"
 	"github.com/ekateryna-tln/booking/internal/hendlers"
+	"github.com/ekateryna-tln/booking/internal/models"
 	"github.com/ekateryna-tln/booking/internal/render"
 	"log"
 	"net/http"
@@ -12,33 +14,35 @@ import (
 
 const portNumber = ":8080"
 
-var appConfig config.AppConfig
+var app config.App
 var session *scs.SessionManager
 
 // main is the main application function
 func main() {
 
-	appConfig.UseCache = false
-	appConfig.CookieSecure = false
+	gob.Register(models.Reservation{})
+
+	app.UseCache = false
+	app.CookieSecure = false
 
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
 	session.Cookie.Persist = true
 	session.Cookie.SameSite = http.SameSiteLaxMode
-	session.Cookie.Secure = appConfig.CookieSecure
-	appConfig.Session = session
+	session.Cookie.Secure = app.CookieSecure
+	app.Session = session
 
-	if appConfig.UseCache {
+	if app.UseCache {
 		templateCache := render.GetTemplateCache()
-		appConfig.TemplateCache = templateCache
+		app.TemplateCache = templateCache
 	}
 
-	render.SetRenderAppConfig(&appConfig)
-	hendlers.SetHandlersRepo(hendlers.NewRepo(&appConfig))
+	render.SetRenderApp(&app)
+	hendlers.SetHandlersRepo(hendlers.NewRepo(&app))
 
 	srv := &http.Server{
 		Addr:    portNumber,
-		Handler: routes(&appConfig),
+		Handler: routes(&app),
 	}
 
 	err := srv.ListenAndServe()

@@ -16,13 +16,13 @@ var Repo *Repository
 
 //Repository is the repository type
 type Repository struct {
-	AppConfig *config.AppConfig
+	App *config.App
 }
 
 // NewRepo creates a new repository
-func NewRepo(a *config.AppConfig) *Repository {
+func NewRepo(a *config.App) *Repository {
 	return &Repository{
-		AppConfig: a,
+		App: a,
 	}
 }
 
@@ -34,7 +34,7 @@ func SetHandlersRepo(r *Repository) {
 // Home is the about page handler
 func (rp *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	remoteIP := r.RemoteAddr
-	rp.AppConfig.Session.Put(r.Context(), "remote_ip", remoteIP)
+	rp.App.Session.Put(r.Context(), "remote_ip", remoteIP)
 	render.RenderTemplate(w, r, "home.page.tmpl", &models.TemplateData{})
 }
 
@@ -42,7 +42,7 @@ func (rp *Repository) Home(w http.ResponseWriter, r *http.Request) {
 func (rp *Repository) About(w http.ResponseWriter, r *http.Request) {
 	stringMap := make(map[string]string)
 	stringMap["test"] = "Test test test"
-	stringMap["remote_ip"] = rp.AppConfig.Session.GetString(r.Context(), "remote_ip")
+	stringMap["remote_ip"] = rp.App.Session.GetString(r.Context(), "remote_ip")
 	render.RenderTemplate(w, r, "about.page.tmpl", &models.TemplateData{
 		StringMap: stringMap,
 	})
@@ -105,7 +105,7 @@ func (rp *Repository) Reservation(writer http.ResponseWriter, request *http.Requ
 	})
 }
 
-//PostReservation handles the posting of a reservation from
+// PostReservation handles the posting of a reservation from
 func (rp *Repository) PostReservation(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
 	if err != nil {
@@ -135,4 +135,23 @@ func (rp *Repository) PostReservation(writer http.ResponseWriter, request *http.
 		return
 	}
 
+	rp.App.Session.Put(request.Context(), "reservation", reservation)
+	http.Redirect(writer, request, "/reservation-summary", http.StatusSeeOther)
+
+}
+
+// ReservationSummary
+func (rp *Repository) ReservationSummary(writer http.ResponseWriter, request *http.Request) {
+	reservation, ok := rp.App.Session.Pop(request.Context(), "reservation").(models.Reservation)
+	if !ok {
+		rp.App.Session.Put(request.Context(), "error", "Can not get reservation from session")
+		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
+		return
+	}
+	data := make(map[string]interface{})
+	data["reservation"] = reservation
+
+	render.RenderTemplate(writer, request, "reservation-summary.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
 }
