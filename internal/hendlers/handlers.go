@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ekateryna-tln/booking/internal/config"
+	"github.com/ekateryna-tln/booking/internal/forms"
 	"github.com/ekateryna-tln/booking/internal/models"
 	"github.com/ekateryna-tln/booking/internal/render"
 	"log"
@@ -45,6 +46,11 @@ func (rp *Repository) About(w http.ResponseWriter, r *http.Request) {
 	render.RenderTemplate(w, r, "about.page.tmpl", &models.TemplateData{
 		StringMap: stringMap,
 	})
+}
+
+// Contacts renders the contacts page and display form
+func (rp *Repository) Contacts(writer http.ResponseWriter, request *http.Request) {
+	render.RenderTemplate(writer, request, "contacts.page.tmpl", &models.TemplateData{})
 }
 
 // Generals renders the room page
@@ -90,10 +96,43 @@ func (rp *Repository) AvailabilityJSON(writer http.ResponseWriter, request *http
 
 // Reservation renders the make a reservation page and display form
 func (rp *Repository) Reservation(writer http.ResponseWriter, request *http.Request) {
-	render.RenderTemplate(writer, request, "make-reservation.page.tmpl", &models.TemplateData{})
+	var emptyReservation models.Reservation
+	data := make(map[string]interface{})
+	data["reservation"] = emptyReservation
+	render.RenderTemplate(writer, request, "make-reservation.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+		Data: data,
+	})
 }
 
-// Contacts renders the contacts page and display form
-func (rp *Repository) Contacts(writer http.ResponseWriter, request *http.Request) {
-	render.RenderTemplate(writer, request, "contacts.page.tmpl", &models.TemplateData{})
+//PostReservation handles the posting of a reservation from
+func (rp *Repository) PostReservation(writer http.ResponseWriter, request *http.Request) {
+	err := request.ParseForm()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	reservation := models.Reservation{
+		FirstName: request.Form.Get("first_name"),
+		LastName:  request.Form.Get("last_name"),
+		Email:     request.Form.Get("email"),
+		Phone:     request.Form.Get("phone"),
+	}
+
+	form := forms.New(request.PostForm)
+	form.CheckRequiredFields("first_name", "last_name", "email")
+	form.MinLength("first_name", 3, request)
+	form.IsEmail("email")
+
+	if !form.Valid() {
+		data := make(map[string]interface{})
+		data["reservation"] = reservation
+		render.RenderTemplate(writer, request, "make-reservation.page.tmpl", &models.TemplateData{
+			Form: form,
+			Data: data,
+		})
+		return
+	}
+
 }
