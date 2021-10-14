@@ -1,12 +1,12 @@
 package render
 
 import (
+	"errors"
 	"fmt"
 	"github.com/ekateryna-tln/booking/internal/config"
 	"github.com/ekateryna-tln/booking/internal/models"
 	"github.com/justinas/nosurf"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 )
@@ -30,7 +30,7 @@ func AddDefaultData(tmplData *models.TemplateData, r *http.Request) *models.Temp
 }
 
 // RenderTemplate
-func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *models.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *models.TemplateData) error {
 	var templateList map[string]*template.Template
 	if app.UseCache {
 		templateList = app.TemplateCache
@@ -38,20 +38,21 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplDat
 		var err error
 		templateList, err = CreateTemplateCache()
 		if err != nil {
-			log.Fatal("create template cache error:", err)
+			return err
 		}
 	}
 
-	template, exist := templateList[tmpl]
-	if !exist {
-		log.Fatal("could not get template from template cache")
+	template, ok := templateList[tmpl]
+	if !ok {
+		return errors.New("could not get template from template cache")
 	}
 
 	tmplData = AddDefaultData(tmplData, r)
 	err := template.Execute(w, tmplData)
 	if err != nil {
-		log.Fatal("writing template error:", err)
+		return err
 	}
+	return nil
 }
 
 // CreateTemplateCache create a template cache as a map
