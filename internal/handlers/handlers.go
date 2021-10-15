@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/ekateryna-tln/booking/internal/config"
 	"github.com/ekateryna-tln/booking/internal/forms"
+	"github.com/ekateryna-tln/booking/internal/helpers"
 	"github.com/ekateryna-tln/booking/internal/models"
 	"github.com/ekateryna-tln/booking/internal/render"
-	"log"
 	"net/http"
 )
 
@@ -33,19 +33,12 @@ func SetHandlersRepo(r *Repository) {
 
 // Home is the about page handler
 func (rp *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	remoteIP := r.RemoteAddr
-	rp.App.Session.Put(r.Context(), "remote_ip", remoteIP)
 	render.RenderTemplate(w, r, "home.page.tmpl", &models.TemplateData{})
 }
 
 // About is the about page handler
 func (rp *Repository) About(w http.ResponseWriter, r *http.Request) {
-	stringMap := make(map[string]string)
-	stringMap["test"] = "Test test test"
-	stringMap["remote_ip"] = rp.App.Session.GetString(r.Context(), "remote_ip")
-	render.RenderTemplate(w, r, "about.page.tmpl", &models.TemplateData{
-		StringMap: stringMap,
-	})
+	render.RenderTemplate(w, r, "about.page.tmpl", &models.TemplateData{})
 }
 
 // Contacts renders the contacts page and display form
@@ -88,7 +81,8 @@ func (rp *Repository) AvailabilityJSON(writer http.ResponseWriter, request *http
 	}
 	out, err := json.MarshalIndent(response, "", "     ")
 	if err != nil {
-		log.Fatalln(err)
+		helpers.ServerError(writer, err)
+		return
 	}
 	writer.Header().Set("Content-type", "application/json")
 	writer.Write(out)
@@ -109,7 +103,7 @@ func (rp *Repository) Reservation(writer http.ResponseWriter, request *http.Requ
 func (rp *Repository) PostReservation(writer http.ResponseWriter, request *http.Request) {
 	err := request.ParseForm()
 	if err != nil {
-		fmt.Println(err)
+		helpers.ServerError(writer, err)
 		return
 	}
 
@@ -144,7 +138,9 @@ func (rp *Repository) PostReservation(writer http.ResponseWriter, request *http.
 func (rp *Repository) ReservationSummary(writer http.ResponseWriter, request *http.Request) {
 	reservation, ok := rp.App.Session.Pop(request.Context(), "reservation").(models.Reservation)
 	if !ok {
-		rp.App.Session.Put(request.Context(), "error", "Can not get reservation from session")
+		errorTest := "Can not get reservation from session"
+		rp.App.ErrorLog.Println(writer, errorTest)
+		rp.App.Session.Put(request.Context(), "error", errorTest)
 		http.Redirect(writer, request, "/", http.StatusTemporaryRedirect)
 		return
 	}

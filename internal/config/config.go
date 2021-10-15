@@ -11,6 +11,7 @@ type App struct {
 	UseCache      bool
 	TemplateCache map[string]*template.Template
 	InfoLog       *log.Logger
+	ErrorLog      *log.Logger
 	CookieSecure  bool
 	Session       *scs.SessionManager
 }

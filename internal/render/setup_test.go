@@ -5,6 +5,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/ekateryna-tln/booking/internal/config"
 	"github.com/ekateryna-tln/booking/internal/models"
+	"log"
 	"net/http"
 	"os"
 	"testing"
@@ -15,6 +16,12 @@ var session *scs.SessionManager
 var testApp config.App
 
 func TestMain(m *testing.M) {
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	testApp.InfoLog = infoLog
+
+	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	testApp.ErrorLog = errorLog
+
 	gob.Register(models.Reservation{})
 
 	testApp.UseCache = false
