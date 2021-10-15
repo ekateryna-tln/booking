@@ -2,3 +2,4 @@
 /cmd/web/coverage.out
 /internal/forms/coverage.out
 /internal/handlers/coverage.out
+database.yml
