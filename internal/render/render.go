@@ -29,8 +29,8 @@ func AddDefaultData(tmplData *models.TemplateData, r *http.Request) *models.Temp
 	return tmplData
 }
 
-// RenderTemplate
-func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *models.TemplateData) error {
+// Template renders templates using http/template
+func Template(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *models.TemplateData) error {
 	var templateList map[string]*template.Template
 	if app.UseCache {
 		templateList = app.TemplateCache
