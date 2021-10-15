@@ -4,10 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ekateryna-tln/booking/internal/config"
+	"github.com/ekateryna-tln/booking/internal/driver"
 	"github.com/ekateryna-tln/booking/internal/forms"
 	"github.com/ekateryna-tln/booking/internal/helpers"
 	"github.com/ekateryna-tln/booking/internal/models"
 	"github.com/ekateryna-tln/booking/internal/render"
+	"github.com/ekateryna-tln/booking/internal/repository"
+	"github.com/ekateryna-tln/booking/internal/repository/dbrepo"
 	"net/http"
 )
 
@@ -17,12 +20,14 @@ var Repo *Repository
 //Repository is the repository type
 type Repository struct {
 	App *config.App
+	DB  repository.DatabaseRepo
 }
 
 // NewRepo creates a new repository
-func NewRepo(a *config.App) *Repository {
+func NewRepo(a *config.App, db *driver.DB) *Repository {
 	return &Repository{
 		App: a,
+		DB:  dbrepo.NewPostgresRepo(db.SQL, a),
 	}
 }
 
