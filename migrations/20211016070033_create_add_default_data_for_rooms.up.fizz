@@ -1,0 +1,2 @@
+sql("insert into rooms values ('f1ef9c13-1aa8-4245-b128-3d479d1b87a2', 'General''s Quarters', '2021-10-16', '2021-10-16');")
+sql("insert into rooms values ('c3a89615-3f0c-470e-adf9-0b393f8bb5ca', 'Major''s Suites', '2021-10-16', '2021-10-16');")

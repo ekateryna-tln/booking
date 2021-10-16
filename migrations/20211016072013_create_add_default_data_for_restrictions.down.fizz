@@ -1,0 +1,1 @@
+sql("delete from restrictions where id in ('b1008c53-304a-4226-b16f-ddf8a95c4ed6', 'f109f297-eff8-4bfc-bde6-dc882c5a1b9f');")

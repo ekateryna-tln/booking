@@ -1,0 +1,1 @@
+sql("delete from rooms where id in ('c3a89615-3f0c-470e-adf9-0b393f8bb5ca', 'f1ef9c13-1aa8-4245-b128-3d479d1b87a2');")

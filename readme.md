@@ -8,6 +8,7 @@ This is the repository for the booking and reservation project.
 - Uses [nosurf](https://github.com/justinas/nosurf)
 - Uses [validator](http://github.com/asaskevich/govalidator)
 - Uses [PostgreSQL Driver and Toolkit](http://github.com/jackc/pgx)
+- Uses [Go uuid generator](http://github.com/satori/go.uuid)
 
 
 go fmt

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/ekateryna-tln/booking/internal/config"
 	"github.com/ekateryna-tln/booking/internal/driver"
 	"github.com/ekateryna-tln/booking/internal/forms"
@@ -12,6 +11,7 @@ import (
 	"github.com/ekateryna-tln/booking/internal/repository"
 	"github.com/ekateryna-tln/booking/internal/repository/dbrepo"
 	"net/http"
+	"time"
 )
 
 // Repo the repository used by handlers
@@ -67,10 +67,51 @@ func (rp *Repository) Availability(writer http.ResponseWriter, request *http.Req
 }
 
 // PostAvailability renders the search availability page
-func (rp *Repository) PostAvailability(writer http.ResponseWriter, request *http.Request) {
-	startDate := request.Form.Get("start_date")
-	endDate := request.Form.Get("end_date")
-	writer.Write([]byte(fmt.Sprintf("Start date is %s, end date is %s", startDate, endDate)))
+func (m *Repository) PostAvailability(w http.ResponseWriter, r *http.Request) {
+	start := r.Form.Get("start_date")
+	end := r.Form.Get("end_date")
+
+	layout := "2006-01-02"
+	startDate, err := time.Parse(layout, start)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	endDate, err := time.Parse(layout, end)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	rooms, err := m.DB.SearchAvailabilityForAllRooms(startDate, endDate)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	for _, i := range rooms {
+		m.App.InfoLog.Println("ROOM:", i.ID, i.RoomName)
+	}
+
+	if len(rooms) == 0 {
+		m.App.Session.Put(r.Context(), "error", "No availability")
+		http.Redirect(w, r, "/search-availability", http.StatusSeeOther)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["rooms"] = rooms
+
+	reservation := models.Reservation{
+		StartDate: startDate,
+		EndDate:   endDate,
+	}
+
+	m.App.Session.Put(r.Context(), "reservation", reservation)
+
+	render.Template(w, r, "choose-room.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
 }
 
 type jsonResponse struct {
@@ -105,21 +146,42 @@ func (rp *Repository) Reservation(writer http.ResponseWriter, request *http.Requ
 }
 
 // PostReservation handles the posting of a reservation from
-func (rp *Repository) PostReservation(writer http.ResponseWriter, request *http.Request) {
-	err := request.ParseForm()
+func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
 	if err != nil {
-		helpers.ServerError(writer, err)
+		helpers.ServerError(w, err)
 		return
 	}
 
+	sd := r.Form.Get("start_date")
+	ed := r.Form.Get("end_date")
+
+	// 2020-01-01 -- 01/02 03:04:05PM '06 -0700
+
+	layout := "2006-01-02"
+	startDate, err := time.Parse(layout, sd)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	endDate, err := time.Parse(layout, ed)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	roomID := r.Form.Get("room_id")
+
 	reservation := models.Reservation{
-		FirstName: request.Form.Get("first_name"),
-		LastName:  request.Form.Get("last_name"),
-		Email:     request.Form.Get("email"),
-		Phone:     request.Form.Get("phone"),
+		FirstName: r.Form.Get("first_name"),
+		LastName:  r.Form.Get("last_name"),
+		Email:     r.Form.Get("email"),
+		Phone:     r.Form.Get("phone"),
+		StartDate: startDate,
+		EndDate:   endDate,
+		RoomID:    roomID,
 	}
 
-	form := forms.New(request.PostForm)
+	form := forms.New(r.PostForm)
 	form.CheckRequiredFields("first_name", "last_name", "email")
 	form.MinLength("first_name", 3)
 	form.IsEmail("email")
@@ -127,15 +189,35 @@ func (rp *Repository) PostReservation(writer http.ResponseWriter, request *http.
 	if !form.Valid() {
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
-		render.Template(writer, request, "make-reservation.page.tmpl", &models.TemplateData{
+		render.Template(w, r, "make-reservation.page.tmpl", &models.TemplateData{
 			Form: form,
 			Data: data,
 		})
 		return
 	}
 
-	rp.App.Session.Put(request.Context(), "reservation", reservation)
-	http.Redirect(writer, request, "/reservation-summary", http.StatusSeeOther)
+	newResID, err := m.DB.InsertReservation(reservation)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	restrictions := models.RoomRestriction{
+		StartDate:     startDate,
+		EndDate:       endDate,
+		RoomID:        roomID,
+		ReservationID: newResID,
+		RestrictionID: "b1008c53-304a-4226-b16f-ddf8a95c4ed6",
+	}
+
+	err = m.DB.InsertRoomRestriction(restrictions)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	m.App.Session.Put(r.Context(), "reservation", reservation)
+	http.Redirect(w, r, "/reservation-summary", http.StatusSeeOther)
 
 }
 
