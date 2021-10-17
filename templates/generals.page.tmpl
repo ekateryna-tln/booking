@@ -31,57 +31,10 @@
 {{end}}
 
 {{define "js"}}
-<script>
-    document.getElementById('check-availability-button').addEventListener('click', function () {
-        let html = `
-        <form id="check-availability-form" action="" method="" novalidate class="needs-validation ps-3 pe-3">
-            <div class="row" id="reservation-date-modal">
-                <div class="col">
-                    <div class="mb-3">
-                        <label for="start" class="form-label">Starting date</label>
-                        <input type="text" class="form-control" id="start" name="start"
-                               aria-describedby="startDateHelp" required disabled>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="mb-3">
-                        <label for="end" class="form-label">Ending date</label>
-                        <input type="text" class="form-control" id="end" name="end"
-                               aria-describedby="endDateHelp" required disabled>
-                    </div>
-                </div>
-            </div>
-        </form>
-        `
-        attention.custom({
-            html: html,
-            title: 'Choose your dates',
-            willOpen: () => {
-                const elem = document.getElementById('reservation-date-modal');
-                const rangepicker = new DateRangePicker(elem, {
-                    format: "yyyy-mm-dd"
-                });
-            },
-            didOpen: () => {
-                document.getElementById('start').removeAttribute('disabled');
-                document.getElementById('end').removeAttribute('disabled');
-            },
-            callback: function(result) {
-
-                let form = document.getElementById('check-availability-form')
-                let formData = new FormData(form)
-                formData.append('csrf_token', '{{.CSRFToken}}')
-
-                fetch('/search-availability-json', {
-                    method: 'post',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data)
-                })
-            }
+    <script src="/static/js/room.js"></script>
+    <script>
+        document.getElementById('check-availability-button').addEventListener('click', function () {
+            CheckAvailability('{{.CSRFToken}}', 'f1ef9c13-1aa8-4245-b128-3d479d1b87a2')
         })
-    })
-</script>
+    </script>
 {{end}}
