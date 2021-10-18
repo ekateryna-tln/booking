@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/ekateryna-tln/booking/internal/config"
 	"github.com/ekateryna-tln/booking/internal/driver"
 	"github.com/ekateryna-tln/booking/internal/forms"
@@ -475,6 +476,43 @@ func (m *Repository) AdminShowReservations(w http.ResponseWriter, r *http.Reques
 		StringMap: stringMap,
 		Form:      forms.New(nil),
 	})
+}
+
+// AdminPostShowReservations shows reservation in the admin tool
+func (m *Repository) AdminPostShowReservations(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	exploded := strings.Split(r.RequestURI, "/")
+	id := exploded[4]
+	src := exploded[3]
+
+	stringMap := make(map[string]string)
+	stringMap["src"] = src
+
+	res, err := m.DB.GetReservationByID(id)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	res.FirstName = r.Form.Get("first_name")
+	res.LastName = r.Form.Get("last_name")
+	res.Email = r.Form.Get("email")
+	res.Phone = r.Form.Get("phone")
+
+	err = m.DB.UpdateReservationByID(res)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	m.App.Session.Put(r.Context(), "flash", "Changes saved")
+	http.Redirect(w, r, fmt.Sprintf("/admin/reservations-%s", src), http.StatusSeeOther)
+
 }
 
 // AdminReservationsCalendar displays the reservation calendar

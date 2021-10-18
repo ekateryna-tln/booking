@@ -371,7 +371,7 @@ func (m *postgresDBRepo) UpdateReservationByID(r models.Reservation) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `update reservations set select 
+	query := `update reservations set 
 				first_name = $2,
 				last_name = $3,
 				email = $4,
