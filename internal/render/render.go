@@ -9,9 +9,12 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 )
 
-var functions = make(template.FuncMap)
+var functions = template.FuncMap{
+	"formatDate": FormatDate,
+}
 
 var app *config.App
 var pathToTemplates = "./templates"
@@ -19,6 +22,11 @@ var pathToTemplates = "./templates"
 // SetRenderApp sets the config for the render template package
 func SetRenderApp(a *config.App) {
 	app = a
+}
+
+// FormatDate returns date in YYYY-MM-DD format
+func FormatDate(t time.Time) string {
+	return t.Format("2006-01-02")
 }
 
 func AddDefaultData(tmplData *models.TemplateData, r *http.Request) *models.TemplateData {
