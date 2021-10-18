@@ -62,7 +62,6 @@ func (m *testDBRepo) UpdateUserByID(u models.User) error {
 	return nil
 }
 
-func (m *testDBRepo) Authenticate(email, testPassword string) (uuid.UUID, string, error) {
-	var uuid uuid.UUID
-	return uuid, "", nil
+func (m *testDBRepo) Authenticate(email, testPassword string) (string, string, error) {
+	return "", "", nil
 }

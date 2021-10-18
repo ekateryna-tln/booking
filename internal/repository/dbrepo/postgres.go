@@ -199,27 +199,27 @@ func (m *postgresDBRepo) UpdateUserByID(u models.User) error {
 }
 
 // Authenticate authenticates a user
-func (m *postgresDBRepo) Authenticate(email, testPassword string) (uuid.UUID, string, error) {
+func (m *postgresDBRepo) Authenticate(email, testPassword string) (string, string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var uuid uuid.UUID
+	var id string
 	var hashedPassword string
 
 	row := m.DB.QueryRowContext(ctx, "select id, password from users where email = $1", email)
 	err := row.Scan(
-		&uuid,
+		&id,
 		&hashedPassword,
 	)
 	if err != nil {
-		return uuid, "", err
+		return id, "", err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(testPassword))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		return uuid, "", errors.New("incorrect password")
+		return id, "", errors.New("incorrect password")
 	} else {
-		return uuid, "", err
+		return id, "", err
 	}
-	return uuid, hashedPassword, err
+	return id, hashedPassword, err
 }
