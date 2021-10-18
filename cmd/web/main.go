@@ -50,6 +50,7 @@ func run() (*driver.DB, error) {
 	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	app.ErrorLog = errorLog
 
+	// what am I going to put in the session
 	gob.Register(models.User{})
 	gob.Register(models.Room{})
 	gob.Register(models.Reservation{})

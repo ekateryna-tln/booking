@@ -77,12 +77,6 @@ function Prompt() {
                     c.didOpen();
                 }
             },
-            preConfirm: () => {
-                return [
-                    document.getElementById('start_date').value,
-                    document.getElementById('end_date').value
-                ]
-            }
         })
         if (result) {
             if (result.dismiss !== Swal.DismissReason.cancel) {

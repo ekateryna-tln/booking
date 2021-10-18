@@ -414,8 +414,8 @@ func (m *postgresDBRepo) UpdateProcessedForReservation(id string, processed int)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `update reservations set select 
-				processed = $2,
+	query := `update reservations set 
+				processed = $2
 			where id = $1`
 
 	_, err := m.DB.ExecContext(ctx, query, id, processed)

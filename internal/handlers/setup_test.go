@@ -22,7 +22,9 @@ import (
 var app config.App
 var session *scs.SessionManager
 var pathToTemplates = "./../../templates"
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"formatDate": render.FormatDate,
+}
 
 func TestMain(m *testing.M) {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -32,7 +34,11 @@ func TestMain(m *testing.M) {
 	app.ErrorLog = errorLog
 
 	// what am I going to put in the session
+	// what am I going to put in the session
+	gob.Register(models.User{})
+	gob.Register(models.Room{})
 	gob.Register(models.Reservation{})
+	gob.Register(models.Restriction{})
 
 	// set up the session
 	session = scs.New()
@@ -45,7 +51,7 @@ func TestMain(m *testing.M) {
 
 	tc, err := CreateTestTemplateCache()
 	if err != nil {
-		log.Fatal("cannot create template cache")
+		log.Fatal("cannot create template cache", err)
 	}
 
 	app.TemplateCache = tc
