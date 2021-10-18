@@ -14,6 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -450,6 +451,33 @@ func (m *Repository) AdminAllReservations(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// AdminShowReservations shows reservation in the admin tool
+func (m *Repository) AdminShowReservations(w http.ResponseWriter, r *http.Request) {
+	exploded := strings.Split(r.RequestURI, "/")
+	id := exploded[4]
+
+	src := exploded[3]
+
+	stringMap := make(map[string]string)
+	stringMap["src"] = src
+
+	res, err := m.DB.GetReservationByID(id)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["reservation"] = res
+
+	render.Template(w, r, "admin-reservations-show.page.tmpl", &models.TemplateData{
+		Data:      data,
+		StringMap: stringMap,
+		Form:      forms.New(nil),
+	})
+}
+
+// AdminReservationsCalendar displays the reservation calendar
 func (m *Repository) AdminReservationsCalendar(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "admin-reservations-calendar.page.tmpl", &models.TemplateData{})
 }
